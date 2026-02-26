@@ -1,242 +1,235 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Scratch to Reveal ❤️</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>For You ♥</title>
 
-  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
-  <style>
-    :root {
-      --rose-light: #fff5f7;
-      --rose: #f8d7e0;
-      --rose-deep: #e8a4b8;
-      --rose-dark: #d47a94;
-      --blush: #fce4ec;
-      --text-soft: #5c3d4a;
-    }
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
 
-    body {
-      margin: 0;
-      background: linear-gradient(155deg, #fff0f4 0%, #fce4ec 30%, #f8d7e0 60%, #f5c6d4 100%);
-      display: flex;
-      justify-content: center;
-      align-items: center;
-      min-height: 100vh;
-      font-family: 'Cormorant Garamond', Georgia, serif;
-      flex-direction: column;
-      padding: 24px;
-      box-sizing: border-box;
-      position: relative;
-      overflow-x: hidden;
-    }
+<style>
+:root{
+  --cream:#fdf6ec;
+  --gold:#d4af37;
+  --gold-light:#f3e5ab;
+  --text:#5a3e36;
+}
 
-    body::before {
-      content: "♥";
-      position: fixed;
-      font-size: 12px;
-      color: rgba(232, 164, 184, 0.25);
-      top: 15%;
-      left: 10%;
-      animation: float 6s ease-in-out infinite;
-    }
+body{
+  margin:0;
+  min-height:100vh;
+  display:flex;
+  justify-content:center;
+  align-items:center;
+  background: radial-gradient(circle at top,#fff8ef 0%,#fdf1e6 40%,#f7e6d5 100%);
+  font-family:'Cormorant Garamond', serif;
+  padding:20px;
+  overflow-x:hidden;
+}
 
-    body::after {
-      content: "♥";
-      position: fixed;
-      font-size: 10px;
-      color: rgba(232, 164, 184, 0.2);
-      bottom: 20%;
-      right: 12%;
-      animation: float 7s ease-in-out infinite 1s;
-    }
+.wrapper{
+  text-align:center;
+  max-width:360px;
+}
 
-    @keyframes float {
-      0%, 100% { transform: translateY(0) scale(1); opacity: 0.25; }
-      50% { transform: translateY(-10px) scale(1.1); opacity: 0.4; }
-    }
+h3{
+  font-family:'Playfair Display', serif;
+  font-size:1.9rem;
+  letter-spacing:0.08em;
+  color:var(--text);
+  margin-bottom:6px;
+}
 
-    .wrapper {
-      text-align: center;
-      max-width: 360px;
-    }
+.subtitle{
+  font-style:italic;
+  color:#9c6b53;
+  margin-bottom:20px;
+}
 
-    h3 {
-      margin: 0 0 8px 0;
-      font-family: 'Playfair Display', Georgia, serif;
-      font-size: 1.75rem;
-      font-weight: 500;
-      color: var(--text-soft);
-      letter-spacing: 0.08em;
-      text-shadow: 0 2px 4px rgba(255,255,255,0.9);
-    }
+.container{
+  position:relative;
+  width:100%;
+  border-radius:22px;
+  overflow:hidden;
+  box-shadow:
+    0 20px 40px rgba(0,0,0,0.15),
+    inset 0 0 40px rgba(0,0,0,0.05);
+  background:var(--cream);
+}
 
-    .subtitle {
-      font-style: italic;
-      color: var(--rose-deep);
-      font-size: 1.05rem;
-      margin-bottom: 12px;
-      letter-spacing: 0.02em;
-    }
+.container img{
+  width:100%;
+  display:block;
+  border-radius:22px;
+  transition:transform 1.2s ease;
+}
 
-    .headphone-hint {
-      display: none;
-      align-items: center;
-      justify-content: center;
-      gap: 10px;
-      padding: 12px 20px;
-      background: linear-gradient(135deg, rgba(232, 164, 184, 0.4) 0%, rgba(252, 228, 236, 0.6) 100%);
-      border: 1px solid rgba(212, 122, 148, 0.3);
-      border-radius: 28px;
-      color: var(--text-soft);
-      font-size: 0.95rem;
-      margin-bottom: 20px;
-      box-shadow: 0 4px 16px rgba(184, 100, 120, 0.15);
-    }
+canvas{
+  position:absolute;
+  top:0;
+  left:0;
+  border-radius:22px;
+}
 
-    .headphone-hint svg {
-      flex-shrink: 0;
-    }
+.revealed img{
+  transform:scale(1.05);
+}
 
-    @media (max-width: 768px) {
-      .headphone-hint {
-        display: flex;
-      }
-    }
+/* Floating music notes */
+.music-note{
+  position:fixed;
+  font-size:22px;
+  animation:floatUp 4s linear forwards;
+  pointer-events:none;
+  opacity:0.9;
+}
 
-    .container {
-      position: relative;
-      width: 320px;
-      box-shadow: 0 12px 40px rgba(184, 100, 120, 0.25), 0 4px 16px rgba(0,0,0,0.08);
-      border-radius: 24px;
-      overflow: hidden;
-      border: 3px solid rgba(255,255,255,0.8);
-    }
-
-    .container img {
-      width: 100%;
-      display: block;
-      border-radius: 22px;
-    }
-
-    canvas {
-      position: absolute;
-      top: 0;
-      left: 0;
-      border-radius: 22px;
-    }
-  </style>
+@keyframes floatUp{
+  0%{ transform:translateY(0) scale(1); opacity:1;}
+  100%{ transform:translateY(-200px) scale(1.6); opacity:0;}
+}
+</style>
 </head>
 
 <body>
 
 <div class="wrapper">
-  <h3>Scratch to Reveal ♥</h3>
-  <p class="subtitle">Something special awaits you…</p>
+  <h3>Scratch to Reveal Jeeny ♥</h3>
+  <div class="subtitle">Headphone use kar lena nahi to sab sun lenge 😌</div>
 
-  <div class="headphone-hint" aria-hidden="true">
-    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
-      <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
-      <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
-    </svg>
-    Use headphones for the best experience
-  </div>
-
-    <div class="container">
-    <img src="./jenny1.png" id="hiddenImage" />
+  <div class="container" id="card">
+    <img src="./jenny1.png" id="hiddenImage">
     <canvas id="scratch"></canvas>
   </div>
 </div>
 
-<!-- Audio -->
 <audio id="bgMusic" preload="auto">
   <source src="./abhitotum_a9m19e1791.mp3" type="audio/mpeg">
 </audio>
 
 <script>
-const canvas = document.getElementById("scratch");
-const ctx = canvas.getContext("2d");
-const img = document.getElementById("hiddenImage");
-const music = document.getElementById("bgMusic");
+const canvas=document.getElementById("scratch");
+const ctx=canvas.getContext("2d");
+const img=document.getElementById("hiddenImage");
+const music=document.getElementById("bgMusic");
+const card=document.getElementById("card");
 
-let isDrawing = false;
-let musicStarted = false;
+let isDrawing=false;
+let musicStarted=false;
+let revealed=false;
+let noteInterval=null;
 
-/* ===== SET CANVAS AFTER IMAGE LOAD ===== */
-img.onload = function () {
-  const width = img.clientWidth;
-  const height = img.clientHeight;
+/* SET CANVAS */
+img.onload=function(){
+  canvas.width=img.clientWidth;
+  canvas.height=img.clientHeight;
 
-  canvas.width = width;
-  canvas.height = height;
+  const gradient=ctx.createLinearGradient(0,0,canvas.width,canvas.height);
+  gradient.addColorStop(0,"#f3e5ab");
+  gradient.addColorStop(1,"#d4af37");
+  ctx.fillStyle=gradient;
+  ctx.fillRect(0,0,canvas.width,canvas.height);
 
-  ctx.fillStyle = "#C0C0C0";
-  ctx.fillRect(0, 0, width, height);
-
-  ctx.globalCompositeOperation = "destination-out";
+  ctx.globalCompositeOperation="destination-out";
 };
 
-/* ===== FORCE AUDIO UNLOCK ON FIRST USER GESTURE ===== */
-function unlockAudio(keepPlaying = false) {
-  if (!musicStarted) {
-    musicStarted = true;
-    music.play().then(() => {
-      if (!keepPlaying) {
-        music.pause();
-        music.currentTime = 0;
-      }
-    }).catch(() => { musicStarted = false; });
+/* FADE IN MUSIC */
+function playMusic(){
+  if(!musicStarted){
+    music.volume=0;
+    music.play().then(()=>{
+      musicStarted=true;
+
+      let fade=setInterval(()=>{
+        if(music.volume<0.9){
+          music.volume+=0.05;
+        }else{
+          clearInterval(fade);
+        }
+      },200);
+
+      startFloatingNotes();
+    }).catch(()=>{});
   }
-  document.removeEventListener("click", unlockAudio);
-  document.removeEventListener("touchstart", unlockAudio);
 }
 
-document.addEventListener("click", unlockAudio);
-document.addEventListener("touchstart", unlockAudio);
+/* FLOATING EMOJIS */
+function startFloatingNotes(){
+  if(noteInterval) return;
+  noteInterval=setInterval(createMusicNote,800);
+}
 
-/* ===== SCRATCH FUNCTIONS ===== */
+function createMusicNote(){
+  const note=document.createElement("div");
+  note.classList.add("music-note");
 
-function getXY(e) {
-  const rect = canvas.getBoundingClientRect();
-  return {
-    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
-    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+  const emojis=["🎵","🎶","💖","✨"];
+  note.innerText=emojis[Math.floor(Math.random()*emojis.length)];
+
+  note.style.left=Math.random()*90+"%";
+  note.style.bottom="40px";
+
+  document.body.appendChild(note);
+  setTimeout(()=>note.remove(),4000);
+}
+
+/* SCRATCH LOGIC */
+function getXY(e){
+  const rect=canvas.getBoundingClientRect();
+  return{
+    x:(e.touches?e.touches[0].clientX:e.clientX)-rect.left,
+    y:(e.touches?e.touches[0].clientY:e.clientY)-rect.top
   };
 }
 
-function start(e) {
-  unlockAudio(true);  // Unlock on first scratch and keep playing
-  isDrawing = true;
+function start(){
+  isDrawing=true;
+}
 
-  if (musicStarted) {
-    music.play().catch(() => {});
+function end(){
+  isDrawing=false;
+  ctx.beginPath();
+}
+
+function draw(e){
+  if(!isDrawing) return;
+  e.preventDefault();
+
+  const {x,y}=getXY(e);
+  ctx.beginPath();
+  ctx.arc(x,y,25,0,Math.PI*2);
+  ctx.fill();
+
+  checkReveal();
+}
+
+/* CHECK SCRATCH % */
+function checkReveal(){
+  const pixels=ctx.getImageData(0,0,canvas.width,canvas.height);
+  let transparent=0;
+
+  for(let i=3;i<pixels.data.length;i+=4){
+    if(pixels.data[i]===0) transparent++;
+  }
+
+  let percent=Math.floor((transparent/(pixels.data.length/4))*100);
+
+  if(percent>30 && !musicStarted){
+    playMusic();
+  }
+
+  if(percent>45 && !revealed){
+    revealed=true;
+    card.classList.add("revealed");
   }
 }
 
-function end() {
-  isDrawing = false;
-  ctx.beginPath();
-}
+canvas.addEventListener("mousedown",start);
+canvas.addEventListener("mouseup",end);
+canvas.addEventListener("mousemove",draw);
 
-function draw(e) {
-  if (!isDrawing) return;
-  e.preventDefault();
-
-  const { x, y } = getXY(e);
-
-  ctx.beginPath();
-  ctx.arc(x, y, 25, 0, Math.PI * 2);
-  ctx.fill();
-}
-
-// Mouse
-canvas.addEventListener("mousedown", start);
-canvas.addEventListener("mouseup", end);
-canvas.addEventListener("mousemove", draw);
-
-// Touch
-canvas.addEventListener("touchstart", start);
-canvas.addEventListener("touchend", end);
-canvas.addEventListener("touchmove", draw);
+canvas.addEventListener("touchstart",start);
+canvas.addEventListener("touchend",end);
+canvas.addEventListener("touchmove",draw);
 </script>
 
 </body>
