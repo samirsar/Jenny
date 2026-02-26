@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Scratch to Reveal ❤️</title>
+
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,600;1,400&family=Playfair+Display:ital,wght@0,500;1,400&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --rose-light: #fff5f7;
+      --rose: #f8d7e0;
+      --rose-deep: #e8a4b8;
+      --rose-dark: #d47a94;
+      --blush: #fce4ec;
+      --text-soft: #5c3d4a;
+    }
+
+    body {
+      margin: 0;
+      background: linear-gradient(155deg, #fff0f4 0%, #fce4ec 30%, #f8d7e0 60%, #f5c6d4 100%);
+      display: flex;
+      justify-content: center;
+      align-items: center;
+      min-height: 100vh;
+      font-family: 'Cormorant Garamond', Georgia, serif;
+      flex-direction: column;
+      padding: 24px;
+      box-sizing: border-box;
+      position: relative;
+      overflow-x: hidden;
+    }
+
+    body::before {
+      content: "♥";
+      position: fixed;
+      font-size: 12px;
+      color: rgba(232, 164, 184, 0.25);
+      top: 15%;
+      left: 10%;
+      animation: float 6s ease-in-out infinite;
+    }
+
+    body::after {
+      content: "♥";
+      position: fixed;
+      font-size: 10px;
+      color: rgba(232, 164, 184, 0.2);
+      bottom: 20%;
+      right: 12%;
+      animation: float 7s ease-in-out infinite 1s;
+    }
+
+    @keyframes float {
+      0%, 100% { transform: translateY(0) scale(1); opacity: 0.25; }
+      50% { transform: translateY(-10px) scale(1.1); opacity: 0.4; }
+    }
+
+    .wrapper {
+      text-align: center;
+      max-width: 360px;
+    }
+
+    h3 {
+      margin: 0 0 8px 0;
+      font-family: 'Playfair Display', Georgia, serif;
+      font-size: 1.75rem;
+      font-weight: 500;
+      color: var(--text-soft);
+      letter-spacing: 0.08em;
+      text-shadow: 0 2px 4px rgba(255,255,255,0.9);
+    }
+
+    .subtitle {
+      font-style: italic;
+      color: var(--rose-deep);
+      font-size: 1.05rem;
+      margin-bottom: 12px;
+      letter-spacing: 0.02em;
+    }
+
+    .headphone-hint {
+      display: none;
+      align-items: center;
+      justify-content: center;
+      gap: 10px;
+      padding: 12px 20px;
+      background: linear-gradient(135deg, rgba(232, 164, 184, 0.4) 0%, rgba(252, 228, 236, 0.6) 100%);
+      border: 1px solid rgba(212, 122, 148, 0.3);
+      border-radius: 28px;
+      color: var(--text-soft);
+      font-size: 0.95rem;
+      margin-bottom: 20px;
+      box-shadow: 0 4px 16px rgba(184, 100, 120, 0.15);
+    }
+
+    .headphone-hint svg {
+      flex-shrink: 0;
+    }
+
+    @media (max-width: 768px) {
+      .headphone-hint {
+        display: flex;
+      }
+    }
+
+    .container {
+      position: relative;
+      width: 320px;
+      box-shadow: 0 12px 40px rgba(184, 100, 120, 0.25), 0 4px 16px rgba(0,0,0,0.08);
+      border-radius: 24px;
+      overflow: hidden;
+      border: 3px solid rgba(255,255,255,0.8);
+    }
+
+    .container img {
+      width: 100%;
+      display: block;
+      border-radius: 22px;
+    }
+
+    canvas {
+      position: absolute;
+      top: 0;
+      left: 0;
+      border-radius: 22px;
+    }
+  </style>
+</head>
+
+<body>
+
+<div class="wrapper">
+  <h3>Scratch to Reveal ♥</h3>
+  <p class="subtitle">Something special awaits you…</p>
+
+  <div class="headphone-hint" aria-hidden="true">
+    <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5">
+      <path d="M3 18v-6a9 9 0 0 1 18 0v6"/>
+      <path d="M21 19a2 2 0 0 1-2 2h-1a2 2 0 0 1-2-2v-3a2 2 0 0 1 2-2h3zM3 19a2 2 0 0 0 2 2h1a2 2 0 0 0 2-2v-3a2 2 0 0 0-2-2H3z"/>
+    </svg>
+    Use headphones for the best experience
+  </div>
+
+    <div class="container">
+    <img src="./jenny1.png" id="hiddenImage" />
+    <canvas id="scratch"></canvas>
+  </div>
+</div>
+
+<!-- Audio -->
+<audio id="bgMusic" preload="auto">
+  <source src="./abhitotum_a9m19e1791.mp3" type="audio/mpeg">
+</audio>
+
+<script>
+const canvas = document.getElementById("scratch");
+const ctx = canvas.getContext("2d");
+const img = document.getElementById("hiddenImage");
+const music = document.getElementById("bgMusic");
+
+let isDrawing = false;
+let musicStarted = false;
+
+/* ===== SET CANVAS AFTER IMAGE LOAD ===== */
+img.onload = function () {
+  const width = img.clientWidth;
+  const height = img.clientHeight;
+
+  canvas.width = width;
+  canvas.height = height;
+
+  ctx.fillStyle = "#C0C0C0";
+  ctx.fillRect(0, 0, width, height);
+
+  ctx.globalCompositeOperation = "destination-out";
+};
+
+/* ===== FORCE AUDIO UNLOCK ON FIRST USER GESTURE ===== */
+function unlockAudio(keepPlaying = false) {
+  if (!musicStarted) {
+    musicStarted = true;
+    music.play().then(() => {
+      if (!keepPlaying) {
+        music.pause();
+        music.currentTime = 0;
+      }
+    }).catch(() => { musicStarted = false; });
+  }
+  document.removeEventListener("click", unlockAudio);
+  document.removeEventListener("touchstart", unlockAudio);
+}
+
+document.addEventListener("click", unlockAudio);
+document.addEventListener("touchstart", unlockAudio);
+
+/* ===== SCRATCH FUNCTIONS ===== */
+
+function getXY(e) {
+  const rect = canvas.getBoundingClientRect();
+  return {
+    x: (e.touches ? e.touches[0].clientX : e.clientX) - rect.left,
+    y: (e.touches ? e.touches[0].clientY : e.clientY) - rect.top
+  };
+}
+
+function start(e) {
+  unlockAudio(true);  // Unlock on first scratch and keep playing
+  isDrawing = true;
+
+  if (musicStarted) {
+    music.play().catch(() => {});
+  }
+}
+
+function end() {
+  isDrawing = false;
+  ctx.beginPath();
+}
+
+function draw(e) {
+  if (!isDrawing) return;
+  e.preventDefault();
+
+  const { x, y } = getXY(e);
+
+  ctx.beginPath();
+  ctx.arc(x, y, 25, 0, Math.PI * 2);
+  ctx.fill();
+}
+
+// Mouse
+canvas.addEventListener("mousedown", start);
+canvas.addEventListener("mouseup", end);
+canvas.addEventListener("mousemove", draw);
+
+// Touch
+canvas.addEventListener("touchstart", start);
+canvas.addEventListener("touchend", end);
+canvas.addEventListener("touchmove", draw);
+</script>
+
+</body>
+</html>
