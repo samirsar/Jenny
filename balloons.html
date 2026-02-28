@@ -1,0 +1,247 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Balloons ♥</title>
+  <link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600&family=Playfair+Display:wght@500&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --cream: #fdf6ec;
+      --gold: #d4af37;
+      --text: #5a3e36;
+    }
+
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      min-height: 100vh;
+      overflow: hidden;
+      background: radial-gradient(circle at top, #fff8ef 0%, #fdf1e6 40%, #f7e6d5 100%);
+      font-family: 'Cormorant Garamond', serif;
+      position: relative;
+    }
+
+    .header {
+      text-align: center;
+      padding: 16px;
+      color: var(--text);
+    }
+
+    .header h3 {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.5rem;
+    }
+
+    .balloon-container {
+      position: absolute;
+      inset: 0;
+      padding-top: 60px;
+    }
+
+    .balloon {
+      position: absolute;
+      width: 50px;
+      height: 65px;
+      cursor: pointer;
+      transition: transform 0.2s ease;
+    }
+
+    .balloon:hover {
+      transform: scale(1.08);
+    }
+
+    .balloon.blasted {
+      pointer-events: none;
+      opacity: 0;
+    }
+
+    .balloon-body {
+      width: 100%;
+      height: 100%;
+      border-radius: 50% 50% 50% 50% / 60% 60% 40% 40%;
+      position: relative;
+      box-shadow:
+        inset -8px -8px 16px rgba(0, 0, 0, 0.15),
+        inset 8px 8px 16px rgba(255, 255, 255, 0.4);
+      transition: transform 0.1s ease;
+    }
+
+    .balloon.knot::after {
+      content: '';
+      position: absolute;
+      bottom: -12px;
+      left: 50%;
+      transform: translateX(-50%);
+      width: 6px;
+      height: 12px;
+      background: inherit;
+      border-radius: 0 0 3px 3px;
+      opacity: 0.8;
+    }
+
+    /* Balloon colors */
+    .balloon[data-color="red"] .balloon-body { background: linear-gradient(135deg, #ff6b6b, #ee5a5a); }
+    .balloon[data-color="pink"] .balloon-body { background: linear-gradient(135deg, #ff9ff3, #f368e0); }
+    .balloon[data-color="gold"] .balloon-body { background: linear-gradient(135deg, #f9ca24, #f0932b); }
+    .balloon[data-color="purple"] .balloon-body { background: linear-gradient(135deg, #a29bfe, #6c5ce7); }
+    .balloon[data-color="blue"] .balloon-body { background: linear-gradient(135deg, #74b9ff, #0984e3); }
+    .balloon[data-color="green"] .balloon-body { background: linear-gradient(135deg, #55efc4, #00b894); }
+
+    /* Blast particles */
+    .blast {
+      position: absolute;
+      pointer-events: none;
+    }
+
+    .blast-particle {
+      position: absolute;
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+    }
+
+    /* Blast animation */
+    @keyframes blastOut {
+      0% {
+        transform: translate(-50%, -50%) translate(0, 0) scale(1);
+        opacity: 1;
+      }
+      100% {
+        transform: translate(-50%, -50%) translate(var(--dx), var(--dy)) scale(0);
+        opacity: 0;
+      }
+    }
+
+    .blast-particle {
+      animation: blastOut 0.5s ease-out forwards;
+    }
+  </style>
+</head>
+<body>
+
+  <div class="header">
+    <h3>Pop a Balloon! 🎈</h3>
+    <p>One of them hides a surprise ♥</p>
+  </div>
+
+  <div class="balloon-container" id="balloonContainer"></div>
+
+  <audio id="surpriseSong" preload="auto">
+    <source src="./abhitotum_a9m19e1791.mp3" type="audio/mpeg">
+  </audio>
+
+  <script>
+    const balloonContainer = document.getElementById('balloonContainer');
+    const surpriseSong = document.getElementById('surpriseSong');
+    const colors = ['red', 'pink', 'gold', 'purple', 'blue', 'green'];
+
+    const balloonCount = 24;
+    let winnerIndex = Math.floor(Math.random() * balloonCount);
+    let songStarted = false;
+
+    function playPopSound() {
+      try {
+        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const osc = ctx.createOscillator();
+        const gain = ctx.createGain();
+        osc.connect(gain);
+        gain.connect(ctx.destination);
+        osc.frequency.setValueAtTime(200, ctx.currentTime);
+        osc.frequency.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.type = 'sine';
+        gain.gain.setValueAtTime(0.75, ctx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.01, ctx.currentTime + 0.1);
+        osc.start(ctx.currentTime);
+        osc.stop(ctx.currentTime + 0.1);
+      } catch (_) {}
+    }
+
+    function createBalloon(index) {
+      const balloon = document.createElement('div');
+      balloon.className = 'balloon knot';
+      balloon.dataset.index = index;
+      balloon.dataset.color = colors[index % colors.length];
+
+      balloon.innerHTML = '<div class="balloon-body"></div>';
+
+      const maxX = Math.max(0, window.innerWidth - 70);
+      const maxY = Math.max(0, window.innerHeight - 100);
+      const x = 30 + Math.random() * maxX;
+      const y = 80 + Math.random() * maxY;
+
+      balloon.style.left = x + 'px';
+      balloon.style.top = y + 'px';
+
+      balloon.addEventListener('click', (e) => handleBalloonClick(e, balloon, index));
+      balloonContainer.appendChild(balloon);
+    }
+
+    const colorMap = {
+      red: '#ee5a5a',
+      pink: '#f368e0',
+      gold: '#f0932b',
+      purple: '#6c5ce7',
+      blue: '#0984e3',
+      green: '#00b894'
+    };
+
+    function createBlastParticles(balloon, color) {
+      const rect = balloon.getBoundingClientRect();
+      const centerX = rect.left + rect.width / 2;
+      const centerY = rect.top + rect.height / 2;
+
+      const blast = document.createElement('div');
+      blast.className = 'blast';
+      blast.style.position = 'fixed';
+      blast.style.left = centerX + 'px';
+      blast.style.top = centerY + 'px';
+      blast.style.pointerEvents = 'none';
+      document.body.appendChild(blast);
+
+      const particleCount = 12;
+      for (let i = 0; i < particleCount; i++) {
+        const particle = document.createElement('div');
+        particle.className = 'blast-particle';
+        const angle = (i / particleCount) * Math.PI * 2 + Math.random();
+        const dist = 60 + Math.random() * 40;
+        const dx = Math.cos(angle) * dist;
+        const dy = Math.sin(angle) * dist;
+        particle.style.setProperty('--dx', dx + 'px');
+        particle.style.setProperty('--dy', dy + 'px');
+        particle.style.background = color;
+        particle.style.boxShadow = '0 0 6px ' + color;
+        particle.style.left = '0';
+        particle.style.top = '0';
+        blast.appendChild(particle);
+      }
+
+      setTimeout(() => blast.remove(), 600);
+    }
+
+    function handleBalloonClick(e, balloon, index) {
+      if (balloon.classList.contains('blasted')) return;
+
+      balloon.classList.add('blasted');
+
+      playPopSound();
+      const balloonColor = colorMap[balloon.dataset.color] || '#ee5a5a';
+      createBlastParticles(balloon, balloonColor);
+
+      if (index === winnerIndex && !songStarted) {
+        songStarted = true;
+        surpriseSong.volume = 0.6;
+        surpriseSong.play().catch(() => {});
+      }
+    }
+
+    for (let i = 0; i < balloonCount; i++) {
+      createBalloon(i);
+    }
+  </script>
+
+</body>
+</html>
