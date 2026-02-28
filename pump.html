@@ -319,16 +319,30 @@ And when it does, you’ll hear my heart beating for you ❤️
     let hasPopped = false;
     let burstAt = minPumps + Math.floor(Math.random() * (maxPossiblePumps - minPumps + 1));
     let audioUnlocked = false;
+    let sfxContext = null;
+
+    function getAudioContext() {
+      if (!sfxContext) {
+        sfxContext = new (window.AudioContext || window.webkitAudioContext)();
+      }
+      return sfxContext;
+    }
 
     function unlockAudio() {
       if (audioUnlocked) return;
       audioUnlocked = true;
-      song.volume = 0;
-      const playPromise = song.play();
-      if (playPromise !== undefined) {
-        playPromise.then(() => {
-          song.pause();
-          song.currentTime = 0;
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      song.load();
+      song.volume = 0.01;
+      song.currentTime = 0;
+      const p = song.play();
+      if (p && p.then) {
+        p.then(() => {
+          setTimeout(() => {
+            song.pause();
+            song.currentTime = 0;
+          }, 50);
         }).catch(() => {});
       }
     }
@@ -345,7 +359,8 @@ And when it does, you’ll hear my heart beating for you ❤️
 
     function playPumpSound() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -362,7 +377,8 @@ And when it does, you’ll hear my heart beating for you ❤️
 
     function playPopSound() {
       try {
-        const ctx = new (window.AudioContext || window.webkitAudioContext)();
+        const ctx = getAudioContext();
+        if (ctx.state === 'suspended') ctx.resume();
         const osc = ctx.createOscillator();
         const gain = ctx.createGain();
         osc.connect(gain);
@@ -437,9 +453,13 @@ And when it does, you’ll hear my heart beating for you ❤️
       createBlast();
       startContinuousEmojis();
 
+      song.load();
       song.volume = 0.6;
       song.currentTime = 0;
-      song.play().catch(() => {});
+      const ctx = getAudioContext();
+      if (ctx.state === 'suspended') ctx.resume();
+      const playPromise = song.play();
+      if (playPromise && playPromise.catch) playPromise.catch(() => {});
     }
 
     function pump() {
