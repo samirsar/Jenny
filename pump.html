@@ -318,6 +318,20 @@ And when it does, you’ll hear my heart beating for you ❤️
     let pumps = 0;
     let hasPopped = false;
     let burstAt = minPumps + Math.floor(Math.random() * (maxPossiblePumps - minPumps + 1));
+    let audioUnlocked = false;
+
+    function unlockAudio() {
+      if (audioUnlocked) return;
+      audioUnlocked = true;
+      song.volume = 0;
+      const playPromise = song.play();
+      if (playPromise !== undefined) {
+        playPromise.then(() => {
+          song.pause();
+          song.currentTime = 0;
+        }).catch(() => {});
+      }
+    }
 
     function getScale() {
       return baseSize + Math.min(1, pumps / burstAt) * (maxSize - baseSize);
@@ -424,12 +438,14 @@ And when it does, you’ll hear my heart beating for you ❤️
       startContinuousEmojis();
 
       song.volume = 0.6;
+      song.currentTime = 0;
       song.play().catch(() => {});
     }
 
     function pump() {
       if (hasPopped) return;
 
+      unlockAudio();
       playPumpSound();
       pumpHandle.classList.add('pumping');
       setTimeout(() => pumpHandle.classList.remove('pumping'), 150);
